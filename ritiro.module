@@ -22,7 +22,7 @@ function ritiro_menu(){
 function ritiro_form($form, &$form_state){
 	$select_stazione = _ritiro_get_vocabulary(3);
 
-	$valore_stazione = isset($form_state['values']['stazione']) ? $form_state['values']['stazione'] : key($select_stazione);
+	$valore_stazione = isset($form_state['values']['stazione']) ? $form_state['values']['stazione'] : '';
 
 	$form['stazione'] = array(
 	'#type' => 'select',
@@ -31,14 +31,18 @@ function ritiro_form($form, &$form_state){
 	'#options' => $select_stazione,
 	'#default_value' => $valore_stazione,
 	// inserisco ajax necessario per la funzione che voglio svolgere
-	'#ajax' => array(
+/*	'#ajax' => array(
 		// quando si verifica 'event' drupal fa una richiesta ad ajax in background. 
 		'event' => 'change',
 		'callback' => 'ritiro_ajax_callback',
 		'wrapper' => 'libro_replace',
 		), //chiudo ajax
-
+*/
 	); //chiudo array form stazione
+        $form['submit_button'] = array(
+        '#type' => 'submit',
+        '#value' => t('click here!'),
+        );
 
 
 	$form['libro'] = array(
@@ -47,33 +51,41 @@ function ritiro_form($form, &$form_state){
 	'#prefix' => '<div id="libro_replace">',
 	'#suffix' => '<div>',
 	'#options' => seconda_select_list($valore_stazione), //devo implementare tipo il get vocabulary di sopra
-	'#default_value' => isset($form_state['values']['libro']) ? $form_state['values']['libro'] : '',
+//	'#default_value' => isset($form_state['values']['libro']) ? $form_state['values']['libro'] : '',
+	'#default_value' => '',
 	); // array form libro
 
+	$form['submit_button'] = array(
+	'#type' => 'submit',
+	'#value' => t('click here!'),
+	);
+	
+	return $form;
 } // function ritiro_form
-
+/*
 function ritiro_ajax_callback($form, &$form_state){
 	return $form['libro'];
-}
+}*/
 
 function _ritiro_get_vocabulary($vid){
 	$terms = taxonomy_get_tree($vid);
-	$output[0] = 'Tutte';
+	$output[0] = '';
 	foreach ($terms as $data){
 	$output[$data->tid] = $data->name;
 	}
 	return $output;	
 }
 
-function seconda_select_list($valore_stazione){
-	$term_stazione = taxonomy_get_term_by_name($valore_stazione);
-	$tid_stazione = _taxonomy_get_tid_from_term($term_stazione);
+function seconda_select_list($cond){
+//	$term_stazione = taxonomy_get_term_by_name($valore_stazione);
+//	$tid_stazione = _taxonomy_get_id_from_term($term_stazione);
 //	$vid = $terms->vid;
 //	 provo ad inserire una query
+//	$term = taxonomy_get_term_by_name(
 	$query = new EntityFieldQuery;
 	$query-> entityCondition('entity_type', 'node')
 	-> entityCondition('bundle', 'libro')
-	-> fieldCondition('field_stazione', 'tid', $tid_stazione, 'CONTAINS')
+	-> fieldCondition('field_stazione', 'tid', $cond, 'CONTAINS')
 	-> fieldCondition('field_numero', 'value', 0 , '>');
 	$results = $query-> execute();
 
@@ -81,8 +93,14 @@ function seconda_select_list($valore_stazione){
 	$nids = array_keys($results['node']);
 	$nodes = node_load_multiple($nids);
 	}
+	$output_libro[0] = '';
 	foreach ($nodes as $node){
-	$output_libro[$data-> tid] = $data -> name;
+	//$output_libro[$data-> tid] = $data -> name;
+		  $titolofield = field_get_items('node',$node, 'field_titolo');
+		  $titolotid = $titolofield[0]['tid'];
+		  $titoloterm = taxonomy_term_load($titolotid);
+		  $titolo = $titoloterm->name;
+		  $output_libro[$titolotid] = $titolo;
 	}//foreach
 
 	return $output_libro;
