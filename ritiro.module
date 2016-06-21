@@ -142,10 +142,10 @@ function _ritiro_libro($form, &$form_state){
 //	print(count($results['node']));
 	foreach ($nodes as $node){
 	$numerofield = field_get_items('node', $node, 'field_numero');
-	$numero = $numerofield[0]['value'] -1;
-//	$numerofield[0]['value'] = $numero;
-//	$node->field_data_field_numero['node'][0]['value'] = $numero;
-//	field_attach_update('node', $numerofield[0]['value']);
+//	Sottaggo 1 al numero dei libri disponibili
+	$numero = $numerofield[0]['value'] - 1;
+	$node->field_data_field_numero[LANGUAGE_NONE][0]['value'] = $numero;
+	field_attach_update('node', $node);
 /*
 	$wrapper = entity_metadata_wrapper('value', $numero);
 	$wrapper->field_data_field_numero->set ($numero - 1);
