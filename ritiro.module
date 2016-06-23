@@ -30,14 +30,6 @@ function ritiro_form($form, &$form_state){
 	'#required' => TRUE,
 	'#options' => $select_stazione,
 	'#default_value' => $valore_stazione,
-	// inserisco ajax necessario per la funzione che voglio svolgere
-/*	'#ajax' => array(
-		// quando si verifica 'event' drupal fa una richiesta ad ajax in background. 
-		'event' => 'change',
-		'callback' => 'ritiro_ajax_callback',
-		'wrapper' => 'libro_replace',
-		), //chiudo ajax
-*/
 	); //chiudo array form stazione
         $form['submint_stazione'] = array(
         '#type' => 'submit',
@@ -48,6 +40,7 @@ function ritiro_form($form, &$form_state){
 	$form['libro'] = array(
 	'#type' => 'select',
 	'#title' => 'Libro',
+	'#required' => TRUE,
 	'#prefix' => '<div id="libro_replace">',
 	'#suffix' => '<div>',
 	'#options' => seconda_select_list($valore_stazione), //devo implementare tipo il get vocabulary di sopra
@@ -59,15 +52,10 @@ function ritiro_form($form, &$form_state){
 	'#type' => 'submit',
 	'#value' => t('Ritira libro selezionato!'),
 	'#submit' => array('_ritiro_libro'),
-	//'#validate' => 
 	);
 	
 	return $form;
 } // function ritiro_form
-/*
-function ritiro_ajax_callback($form, &$form_state){
-	return $form['libro'];
-}*/
 
 function _ritiro_get_vocabulary($vid){
 	$terms = taxonomy_get_tree($vid);
@@ -79,9 +67,6 @@ function _ritiro_get_vocabulary($vid){
 }
 
 function seconda_select_list($cond){
-//	$term_stazione = taxonomy_get_term_by_name($valore_stazione);
-//	$tid_stazione = _taxonomy_get_id_from_term($term_stazione);
-//	$vid = $terms->vid;
 //	 provo ad inserire una query
 //	$term = taxonomy_get_term_by_name(
 	$query = new EntityFieldQuery;
@@ -112,7 +97,7 @@ function ritiro_form_validate($form, &$form_state){
 }
 
 function ritiro_form_submit($form, &$form_state){
-        drupal_set_message(t('Stazione immessa'));
+//        drupal_set_message(t('Stazione immessa'));
         $form_state['rebuild'] = TRUE;
 }
 
@@ -144,17 +129,11 @@ function _ritiro_libro($form, &$form_state){
 	$numerofield = field_get_items('node', $node, 'field_numero');
 //	Sottaggo 1 al numero dei libri disponibili
 	$numero = $numerofield[0]['value'] - 1;
-	$node->field_data_field_numero[LANGUAGE_NONE][0]['value'] = $numero;
+	$node->field_numero[LANGUAGE_NONE][0]['value'] = $numero;
 	field_attach_update('node', $node);
-/*
-	$wrapper = entity_metadata_wrapper('value', $numero);
-	$wrapper->field_data_field_numero->set ($numero - 1);
-	$wrapper ->save();
-*/
+
 	}	
-	drupal_set_message($numero);
-//	_update_numero();
-	
+	drupal_set_message('Libro ritirato correttamente. Grazie!');
 	$form_state['rebuild'] = TRUE;
 }
 
@@ -163,14 +142,3 @@ function ritiro_permission(){
                 'title' => t('Access content for the ritiro form'),           
                 );
 }
-/*
-function _update_numero(){  
- $query = db_select('field_data_field_numero');
-	 $query->Fields( array('value'));
-	$result = $query->execute();
-
-  // Loop through each row item in the results
-  foreach ($result as $record) {
-	$valore_numero = field_info_field($record);
-	drupal_set_message($valore_numero);
-*/
