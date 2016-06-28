@@ -1,0 +1,5 @@
+name = deposito
+
+description = Modulo per il deposito libri
+
+core = 7.x
