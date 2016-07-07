@@ -1,0 +1,5 @@
+name = ricerca
+description = Il modulo per ricercare i libri.
+core = 7.x
+
+configure = admin/config/content/ricerca

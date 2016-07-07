@@ -1,0 +1,5 @@
+name = mappe
+description = Il modulo per mostrare la mappa.
+core = 7.x
+
+configure = admin/config/content/mappe

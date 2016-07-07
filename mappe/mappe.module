@@ -1,0 +1,60 @@
+<?php
+
+function mappe_init() {
+	//$stazioni = array('nome' => 'termini');
+    drupal_add_js('http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=true_or_false', 'external');
+    //drupal_add_js(array('myModule' => $stazioni), 'setting');
+    drupal_add_js(drupal_get_path('module', 'mappe') . '/gmap.js');
+    
+}
+
+function mappe_block_info() {
+  $blocks['mappe'] = array(
+    'info' => t('Google Map'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  return $blocks;
+}
+ 
+function mappe_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'mappe':
+      $block['subject'] = t('Google maps');
+      $block['content'] = '<div id="gmap" style="width: 100%; height: 200px;"></div> 
+      <br>
+      <div style="text-align:right"><a href="/mappe">more</a></div>';
+      break;
+  }
+  return $block;
+}
+
+function mappe_permission() {
+	return array(
+		'access mappe content' => array(
+			'title' => t('Access content for the mappe module'),
+		)
+	);
+}
+
+
+function mappe_menu() {
+  $items['mappe'] = array(
+    'title' => 'Pagina della mappa',
+    'page callback' => '_mappe_page',
+    'access arguments' => array('access mappe content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+
+function _mappe_page() {
+  //return array('#markup' => '<p>' . t('Say Hello to the world') . '</p>');
+  return '<br>
+  <p id="testomappa"></p>
+  <br>
+  <div id="gmap" style="width: 100%; height: 500px;"></div>';
+}
+
+

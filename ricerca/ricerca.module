@@ -1,0 +1,182 @@
+<?php
+
+
+
+function ricerca_menu() {
+  $items = array();
+
+  $items['ricerca'] = array( //this creates a URL that will call this form at "ricerca"
+    'title' => 'Ricerca', //page title
+    'description' => 'A form to search books.',
+    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+    'page arguments' => array('ricerca_form'), //put the name of the form here
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+function ricerca_form($form, &$form_state) {
+  
+    // If the form has been submitted, output something related to the submission
+  if (!empty($form_state['values']['libro'])) {
+	  
+    $form['libro'] = array(
+	  '#type' => 'textfield', //you can find a list of available types in the form api
+	  '#title' => 'Quale libro vuoi cercare?',
+	  '#size' => 10,
+	  '#maxlength' => 20,
+	  '#required' => TRUE, //make this field required 
+	  '#value' => $form_state['values']['libro'],
+	);
+	    
+	$form['stazione'] = array(
+	  '#type' => 'select',
+	  '#title' => 'Seleziona la stazione',
+	  '#required' => TRUE,
+	  '#options' => _ricerca_get_vocabulary(taxonomy_vocabulary_machine_name_load('stazioni')->vid),
+	  '#default_value' => $form_state['values']['stazione'],  
+	);
+	  
+	
+	  
+	$form['submit_button'] = array(
+	  '#type' => 'submit',
+	  '#value' => t('Ricerca'),
+	);  
+	  
+	
+	if($form_state['values']['stazione'] == 0){
+		$cond1 = '';
+	}else{
+		$cond1 = $form_state['values']['stazione'];
+	}
+
+	
+	$query = new EntityFieldQuery;
+	$query->entityCondition('entity_type', 'node')
+		->entityCondition('bundle', 'libro')
+		->fieldCondition('field_stazione','tid', $cond1, 'CONTAINS')
+		->fieldCondition('field_numero','value',0,'>');
+	$results = $query->execute();
+	
+	if (isset($results['node'])) {
+	
+		$nids = array_keys($results['node']);
+		$nodes = node_load_multiple($nids);
+		//$nodesoutput = node_view_multiple($nodes);
+		
+		//print(count($results['node']));
+
+		$list= '<table> 
+		  <tr>
+		    <th >Titolo</th>
+		    <th>Autore</th>
+			<th>Stazione</th>
+			<th>Numero</th>
+		  </tr>
+		  ';
+		$count = 0;
+		foreach ($nodes as $node) {
+		  $titolofield = field_get_items('node',$node, 'field_titolo');
+		  $titolotid = $titolofield[0]['tid'];
+		  $titoloterm = taxonomy_term_load($titolotid);
+		  $titolo = $titoloterm->name;
+		  
+		  if (stristr($titolo, $form_state['values']['libro']) !== false){			  
+			  $customerfield1 = field_get_items('node', $node, 'field_author');
+			  $autore = $customerfield1[0]['value'];
+			  $numerofield = field_get_items('node',$node, 'field_numero');
+			  $numero = $numerofield[0]['value'];
+			  $stazionefield = field_get_items('node',$node, 'field_stazione');
+			  $stazionetid = $stazionefield[0]['tid'];
+			  $stazioneterm = taxonomy_term_load($stazionetid);
+			  $stazione = $stazioneterm->name;
+			  //$list.= $node->title.' '.$autore.' '.$numero.' '.$stazione.' '.$titolo.'<br>';
+			  $list.='<tr>
+			    <td>'.$titolo.'</td>
+			    <td>'.$autore.'</td>
+			    <td>'.$stazione.'</td>
+			    <td>'.$numero.'</td>
+			  </tr>
+			  ';
+			  $count++;
+		  }//if(stristr...
+		}//foreach
+		$list.= '</table>';
+		
+		if($count==0){
+			$list.='<br>Non sono stati trovati libri corrispondenti ai criteri di ricerca';
+		}
+		  
+		$form['submission'] = array(
+		  '#markup' => '<br> Hai inserito ' . $form_state['values']['libro'].' '.$form_state['values']['stazione'].'<br>'. $list);
+    }//if (isset($results['node']))
+  }//if (!empty($form_state['values']['libro']))
+  else {
+  
+  
+	  $form['libro'] = array(
+		'#type' => 'textfield', //you can find a list of available types in the form api
+		'#title' => 'Quale libro vuoi cercare?',
+		'#size' => 10,
+		'#maxlength' => 20,
+		'#required' => TRUE, //make this field required 
+	  );
+	  
+	  $form['stazione'] = array(
+	    '#type' => 'select',
+	    '#title' => 'Seleziona la stazione',
+	    '#required' => TRUE,
+	    '#options' => _ricerca_get_vocabulary(taxonomy_vocabulary_machine_name_load('stazioni')->vid),
+	    '#default_value' => 'Tutte',    
+	  );
+	  
+	  
+	  
+	  $form['submit_button'] = array(
+		'#type' => 'submit',
+		'#value' => t('Ricerca'),
+	  );
+  }
+  return $form;
+}
+
+//DA FARE
+function ricerca_form_validate($form, &$form_state) {
+  //if (!($form_state['values']['libro'] > 0)){
+    //form_set_error('libro', t('Price must be a positive number.'));
+  //}
+}
+
+function ricerca_form_submit($form, &$form_state) {
+	drupal_set_message(t('The form has been submitted.'));
+	//$form_state['redirect'] = 'ricerca/risultati';
+	$form_state['rebuild'] = TRUE;
+	
+
+}
+
+
+
+function ricerca_permission() {
+	return array(
+		'access ricerca content' => array(
+			'title' => t('Access content for the ricerca module'),
+		)
+	);
+}
+
+function _ricerca_get_vocabulary($vid) {
+  $terms = taxonomy_get_tree($vid);
+
+  $output[0] = 'Tutte';
+
+  foreach ($terms as $data) {
+    $output[$data->tid] = $data->name;
+  }
+  
+
+
+  return $output;
+}
+
