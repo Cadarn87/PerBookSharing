@@ -1,9 +1,7 @@
 <?php
 
 function mappe_init() {
-	//$stazioni = array('nome' => 'termini');
     drupal_add_js('http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=true_or_false', 'external');
-    //drupal_add_js(array('myModule' => $stazioni), 'setting');
     drupal_add_js(drupal_get_path('module', 'mappe') . '/gmap.js');
     
 }
@@ -50,7 +48,6 @@ function mappe_menu() {
 
 
 function _mappe_page() {
-  //return array('#markup' => '<p>' . t('Say Hello to the world') . '</p>');
   return '<br>
   <p id="testomappa"></p>
   <br>

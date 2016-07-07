@@ -3,9 +3,7 @@
     attach: function(context, settings) {
 	  
 	  
-	  //if (Drupal.settings.myModule.nome === 'termini') {
-		//alert('myModule '+Drupal.settings.myModule);
-	  //}
+
 	  
 	  if(document.getElementById("testomappa")){
 	    var x = document.getElementById("testomappa");
@@ -55,9 +53,7 @@
 
 	  if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(showPosition);
-	  } else {
-		//x.innerHTML = "Geolocation is not supported by this browser.";
-	  }
+	  } 
 	  
 	  function showPosition(position) {
 		  //x.innerHTML = "Latitude: " + position.coords.latitude +"<br>Longitude: " + position.coords.longitude;
@@ -69,7 +65,6 @@
 		  position:new google.maps.LatLng(lat,long),
 		  map:map,
 		  title:'Ti trovi qui',
-		  //icon:'blue_MarkerH.png'
 		 });
 		 
 		 var infoWindow = new google.maps.InfoWindow({
@@ -109,7 +104,6 @@
 		 
 		 
 		 //centro la mappa tra la mia posizione e la stazione più vicina
-		 //DA FARE 
 		 var bounds = new google.maps.LatLngBounds();
 		 bounds.extend(new google.maps.LatLng(lat, long));//mia posizione
 		 bounds.extend(new google.maps.LatLng(minlat, minlong));//stazione più vicina
