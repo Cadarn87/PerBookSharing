@@ -56,7 +56,8 @@ function ricerca_form($form, &$form_state) {
 	$query->entityCondition('entity_type', 'node')
 		->entityCondition('bundle', 'libro')
 		->fieldCondition('field_stazione','tid', $cond1, 'CONTAINS')
-		->fieldCondition('field_numero','value',0,'>');
+		->fieldCondition('field_numero','value',0,'>')
+		->propertyOrderBy('title','ASC');
 	$results = $query->execute();
 	
 	if (isset($results['node'])) {
