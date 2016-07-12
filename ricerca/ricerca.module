@@ -110,7 +110,8 @@ function ricerca_form($form, &$form_state) {
 		}
 		  
 		$form['submission'] = array(
-		  '#markup' => '<br> Hai inserito ' . $form_state['values']['libro'].' '.$form_state['values']['stazione'].'<br>'. $list);
+		  //'#markup' => '<br> Hai inserito ' . $form_state['values']['libro'].' '.$form_state['values']['stazione'].'<br>'. $list);//debug
+		  '#markup' => $list);
     }//if (isset($results['node']))
     
     $form_state['submitted']='FALSE';
