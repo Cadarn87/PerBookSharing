@@ -1,0 +1,7 @@
+name = ritiro
+
+description = Modulo per il ritiro libri
+
+core = 7.x
+
+

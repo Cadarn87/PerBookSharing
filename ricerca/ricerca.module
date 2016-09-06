@@ -7,8 +7,8 @@ function ricerca_menu() {
 
   $items['ricerca'] = array( //this creates a URL that will call this form at "ricerca"
     'title' => 'Ricerca', //page title
-    'description' => 'A form to search books.',
-    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.
+    'description' => 'A form to mess around with.',
+    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
     'page arguments' => array('ricerca_form'), //put the name of the form here
     'access callback' => TRUE
   );
@@ -18,14 +18,14 @@ function ricerca_menu() {
 function ricerca_form($form, &$form_state) {
   
     // If the form has been submitted, output something related to the submission
-	if($form_state['submitted']=='TRUE'){
+  if (!empty($form_state['values']['libro'])) {
 	  
     $form['libro'] = array(
-	  '#type' => 'textfield', 
+	  '#type' => 'textfield', //you can find a list of available types in the form api
 	  '#title' => 'Quale libro vuoi cercare?',
 	  '#size' => 10,
 	  '#maxlength' => 20,
-	  '#required' => TRUE, 
+	  '#required' => TRUE, //make this field required 
 	  '#value' => $form_state['values']['libro'],
 	);
 	    
@@ -33,7 +33,7 @@ function ricerca_form($form, &$form_state) {
 	  '#type' => 'select',
 	  '#title' => 'Seleziona la stazione',
 	  '#required' => TRUE,
-	  '#options' => _ricerca_get_vocabulary(taxonomy_vocabulary_machine_name_load('stazioni')->vid),
+	  '#options' => _ricerca_get_vocabulary(3),
 	  '#default_value' => $form_state['values']['stazione'],  
 	);
 	  
@@ -56,15 +56,16 @@ function ricerca_form($form, &$form_state) {
 	$query->entityCondition('entity_type', 'node')
 		->entityCondition('bundle', 'libro')
 		->fieldCondition('field_stazione','tid', $cond1, 'CONTAINS')
-		->fieldCondition('field_numero','value',0,'>')
-		->propertyOrderBy('title','ASC');
+		->fieldCondition('field_numero','value',0,'>');
 	$results = $query->execute();
 	
 	if (isset($results['node'])) {
 	
 		$nids = array_keys($results['node']);
 		$nodes = node_load_multiple($nids);
-
+		//$nodesoutput = node_view_multiple($nodes);
+		
+		//print(count($results['node']));
 
 		$list= '<table> 
 		  <tr>
@@ -75,9 +76,6 @@ function ricerca_form($form, &$form_state) {
 		  </tr>
 		  ';
 		$count = 0;
-		
-		
-		
 		foreach ($nodes as $node) {
 		  $titolofield = field_get_items('node',$node, 'field_titolo');
 		  $titolotid = $titolofield[0]['tid'];
@@ -93,6 +91,7 @@ function ricerca_form($form, &$form_state) {
 			  $stazionetid = $stazionefield[0]['tid'];
 			  $stazioneterm = taxonomy_term_load($stazionetid);
 			  $stazione = $stazioneterm->name;
+			  //$list.= $node->title.' '.$autore.' '.$numero.' '.$stazione.' '.$titolo.'<br>';
 			  $list.='<tr>
 			    <td>'.$titolo.'</td>
 			    <td>'.$autore.'</td>
@@ -110,29 +109,25 @@ function ricerca_form($form, &$form_state) {
 		}
 		  
 		$form['submission'] = array(
-		  //'#markup' => '<br> Hai inserito ' . $form_state['values']['libro'].' '.$form_state['values']['stazione'].'<br>'. $list);//debug
-		  '#markup' => $list);
+		  '#markup' => '<br> Hai inserito ' . $form_state['values']['libro'].' '.$form_state['values']['stazione'].'<br>'. $list);
     }//if (isset($results['node']))
-    
-    $form_state['submitted']='FALSE';
-    
   }//if (!empty($form_state['values']['libro']))
   else {
   
   
 	  $form['libro'] = array(
-		'#type' => 'textfield',
+		'#type' => 'textfield', //you can find a list of available types in the form api
 		'#title' => 'Quale libro vuoi cercare?',
 		'#size' => 10,
 		'#maxlength' => 20,
-		'#required' => TRUE, 
+		'#required' => TRUE, //make this field required 
 	  );
 	  
 	  $form['stazione'] = array(
 	    '#type' => 'select',
 	    '#title' => 'Seleziona la stazione',
 	    '#required' => TRUE,
-	    '#options' => _ricerca_get_vocabulary(taxonomy_vocabulary_machine_name_load('stazioni')->vid),
+	    '#options' => _ricerca_get_vocabulary(3),
 	    '#default_value' => 'Tutte',    
 	  );
 	  
@@ -146,10 +141,16 @@ function ricerca_form($form, &$form_state) {
   return $form;
 }
 
-
+//DA FARE
+function ricerca_form_validate($form, &$form_state) {
+  //if (!($form_state['values']['libro'] > 0)){
+    //form_set_error('libro', t('Price must be a positive number.'));
+  //}
+}
 
 function ricerca_form_submit($form, &$form_state) {
 	drupal_set_message(t('The form has been submitted.'));
+	//$form_state['redirect'] = 'ricerca/risultati';
 	$form_state['rebuild'] = TRUE;
 	
 
